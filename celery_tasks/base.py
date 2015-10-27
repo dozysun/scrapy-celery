@@ -13,20 +13,11 @@ from settings import ENGINE
 
 class DatabaseTasks(Task):
     abstract = True
-    _db = None
-    _rcache = None
+    _db = scoped_session(sessionmaker(bind=create_engine(ENGINE,echo=True),autoflush=True,autocommit=False))
 
     @property
     def db(self):
-        if self._db is None:
-            self._db = scoped_session(sessionmaker(bind=create_engine(ENGINE,echo=True),autoflush=True,autocommit=False))
         return self._db
-
-    @property
-    def rcache(self):
-        # if self._rcache is None:
-            # self._rcache = RedisManaher().cache_con()
-        return self._rcache
 
     def on_success(self, retval, task_id, args, kwargs):
         print '%s, is succeed' % task_id
