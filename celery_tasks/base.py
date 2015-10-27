@@ -13,10 +13,12 @@ from settings import ENGINE
 
 class DatabaseTasks(Task):
     abstract = True
-    _db = scoped_session(sessionmaker(bind=create_engine(ENGINE,echo=True),autoflush=True,autocommit=False))
+    _db = None
 
     @property
     def db(self):
+        if self._db is None:
+            self._db = scoped_session(sessionmaker(bind=create_engine(ENGINE,echo=True),autoflush=True,autocommit=False))
         return self._db
 
     def on_success(self, retval, task_id, args, kwargs):
