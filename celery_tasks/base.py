@@ -13,11 +13,10 @@ from settings import ENGINE
 
 class DatabaseTasks(Task):
     abstract = True
-    _db = None
 
     @property
     def db(self):
-        if self._db is None:
+        if not hasattr(DatabaseTasks, '_db'):
             setattr(DatabaseTasks, '_db', scoped_session(sessionmaker(bind=create_engine(ENGINE,echo=True),autoflush=True,autocommit=False)))
         return self._db
 
