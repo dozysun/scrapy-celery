@@ -23,18 +23,18 @@ def sleep(seconds):
     print seconds
     return seconds
 
-@app.task(base=DatabaseTasks)
-def sqltest(table):
-    sqltest.db.execute('insert into users(`nick`) values ("%s")' % table)
-    sqltest.db.commit()
+@app.task(bind=True,base=DatabaseTasks)
+def sqltest(self,table):
+    self.db.execute('insert into users(`nick`) values ("%s")' % table)
+    self.db.commit()
 
 @app.task
 def add(x, y):
     print x+y
     return x + y
 
-@app.task(base=DatabaseTasks)
-def create_community(name,address):
+@app.task(bind=True, base=DatabaseTasks)
+def create_community(self, name,address):
     name = [n.strip() for n in name if n.strip()]
     details = zip(name, address)
     create_community.db.execute(
@@ -44,13 +44,13 @@ def create_community(name,address):
                                           'area': create_community.db.query(Area.id).filter(Area.area_name.like('%s%%' % n[1][1:3]),Area.id.between(719,735) ,Area.deleted==0).scalar()
                                         } for n in details if not create_community.db.query(Community.id).filter(Community.address.like('%%%s%%' % n[1].split(u'】')[-1].strip().split(u'、')[0].split(u'，')[0].split(u'（')[0].split(u' ')[0])).first()]
     )
-    sqltest.db.commit()
+    self.db.commit()
 
 
-@app.task(base=DatabaseTasks)
-def create_community_all(address_list, city=73, province=9, city_code = 'sh'):
-    create_community.db.execute(
-        CommunityALL.__table__.insert(),[{
+@app.task(bind=True, base=DatabaseTasks)
+def create_community_all(self, address_list, city=73, province=9, city_code = 'sh'):
+    self.db.execute(
+        CommunityALL.__table__.insert(), [{
                                           'name':n[0],
                                           'ori_address': n[1],
                                           'address':(n[1].split(u'】')[-1].strip() if '...' not in n[1] else u'、'.join(n[1].split(u'】')[-1].strip().split(u'、' if u'、' in n[1] else u'，' if u'，' in n[1] else u'（' if u'（' in n[1] else u' ')[0:-1])  if len(n[1].split(u'】')[-1].strip().split(u'、' if u'、' in n[1] else u'，' if u'，' in n[1] else u'（' if u'（' in n[1] else u' '))>1 else n[1].split(u'】')[-1].strip().split(u' ')[0] ).strip() ,
@@ -58,26 +58,25 @@ def create_community_all(address_list, city=73, province=9, city_code = 'sh'):
                                           'area': create_community_all.db.query(Area.id).filter(Area.area_name.like('%s%%' % n[1][1:3]),Area.father==city,Area.deleted==0).scalar(),
                                           'city': city,
                                           'province':province,
-                                          'city_code': city_code
-                                        } for n in address_list ]
+                                          'city_code': city_code} for n in address_list]
     )
-    create_community_all.db.commit()
+    self.db.commit()
 
 
-@app.task(base=DatabaseTasks)
-def create_community_test(name,address):
+@app.task(bind= True, base=DatabaseTasks)
+def create_community_test(self, name,address):
     name = [n.strip() for n in name if n.strip()]
     details = zip(name, address)
-    create_community.db.execute(
+    self.db.execute(
         CommunityTest.__table__.insert(),[{
                                           'name':n[0], 'address':n[1]
                                         } for n in details ]
     )
-    sqltest.db.commit()
+    self.db.commit()
 
 
-@app.task(base=DatabaseTasks)
-def create_company_test(**kwargs):
+@app.task(bind=True, base=DatabaseTasks)
+def create_company_test(self,**kwargs):
     company = CompanyDianPing()
     company.name = kwargs['title'][0]
     company.area = kwargs['area'][0] if kwargs['area'] else ''
@@ -87,11 +86,11 @@ def create_company_test(**kwargs):
     if kwargs['desc']:
         desc = ','.join(kwargs['desc'])
         company.desc = desc
-    create_company_test.db.add(company)
-    create_company_test.db.commit()
+    self.db.add(company)
+    self.db.commit()
 
-@app.task(base=DatabaseTasks)
-def create_company_from_dianping_all(**kwargs):
+@app.task(bind=True, base=DatabaseTasks)
+def create_company_from_dianping_all(self,**kwargs):
     company = CompanyDianPingNew()
     company.city = kwargs['city'][0].replace(u'站', '') if kwargs['city'] else ''
     company.name = kwargs['title'][0] if kwargs['title'] else ''
@@ -103,8 +102,8 @@ def create_company_from_dianping_all(**kwargs):
     if kwargs['desc']:
         desc = ','.join(kwargs['desc'])
         company.desc = desc
-    create_company_test.db.add(company)
-    create_company_test.db.commit()
+    self.db.add(company)
+    self.db.commit()
 
 
 # if __name__ =='__main__':
