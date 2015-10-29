@@ -13,6 +13,7 @@ from settings import ENGINE
 
 class DatabaseTasks(Task):
     abstract = True
+    send_error_emails = True
 
     @property
     def db(self):

@@ -1,5 +1,8 @@
 #!/usr/bin/env python2.7
 # encoding:utf-8
+
+from __future__ import absolute_import
+
 __author__ = 'dozy-sun'
 import tornado.httpserver
 import tornado.ioloop
@@ -9,7 +12,9 @@ import tornado.gen
 import tornado.httpclient
 import tcelery
 from celery_tasks import tasks
+from celery_tasks.tasks import add
 from functools import partial
+from celery import group,chain,chord
 
 from tornado.options import define, options
 define("port", default=9000, help="run on the given port", type=int)
@@ -21,6 +26,14 @@ class SleepHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def get(self):
         print 'add'
+        chain(add.s(2, 2), add.s(4), add.s(8)).get()
+        group(tasks.add.subtask(i) for i in xrange(10)).apply_async()
+        esult = tasks.add.apply_async((2, 2),  countdown=3, expires=60, retry=True, retry_policy={
+            'max_retries': 3,
+            'interval_start': 0,
+            'interval_step': 0.2,
+            'interval_max': 0.2,
+        })
         a = tasks.add.apply_async(args=[5, 6])
         print 'done'
         print a.result

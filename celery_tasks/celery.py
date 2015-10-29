@@ -54,6 +54,9 @@ app.conf.update(
     #连接超时时间 默认4,单位s
     # BROKER_CONNECTION_TIMEOUT = 1,
 
+    #取消速率限制
+    # CELERY_DISABLE_RATE_LIMITS = True,
+
     #使用本地时间,默认使用utc
     CELERY_ENABLE_UTC = False,
 
@@ -75,14 +78,16 @@ app.conf.update(
     #     ('George Costanza', 'george@vandelay.com'),
     #     ('Cosmo Kramer', 'kosmo@vandelay.com'),
     # ),
+
+
     # # Email address used as sender (From field).
-    # SERVER_EMAIL = 'no-reply@vandelay.com',
-    #
+    # # SERVER_EMAIL = 'no-reply@vandelay.com',
+    # ADMINS = [('_', 'dozysun@gmail.com')],
     # # Mailserver configuration
     # EMAIL_HOST = 'mail.vandelay.com',
     # EMAIL_PORT = 25,
-    # # EMAIL_HOST_USER = 'servers'
-    # # EMAIL_HOST_PASSWORD = 's3cr3t'
+    # EMAIL_HOST_USER = 'servers'
+    # EMAIL_HOST_PASSWORD = 's3cr3t'
 )
 
 if __name__ == '__main__':
@@ -90,3 +95,6 @@ if __name__ == '__main__':
 
 # celery -A celery_tasks worker -B -Q default,feed_tasks -l info
 # celery flower -A celery_tasks -port=5555 --basic_auth=username:pwd,username2:pwd2
+# ps auxww | grep 'celery' | awk '{print $2}' | xargs kill -9
+# self.app - Celery  self - Task  self.request - 请求
+
